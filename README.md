@@ -79,11 +79,13 @@ pathfdm/            the package
   denoise.py        predictive nearest-neighbour noise reduction
   surrogate.py      ExtraTrees surrogate, OOB / cross-validated R², SHAP
   evaluation.py     AUC, k-means ARI, embedding comparison
-  plotting.py       trajectory-space, parity and beeswarm plots
+  plotting.py       trajectory space, descriptors along the paths, parity and beeswarm plots
+  data.py           download of the trajectory data from Zenodo
 systems/<name>/     one folder per system studied in the paper
   load_data.py      data paths (edit DATA), loader options, labels, per-frame descriptors
   <name>.ipynb      load -> FDM -> trajectory space -> surrogate accuracy -> SHAP, plus settings comparisons
-scripts/            make_notebooks.py (regenerates the notebooks), compute_embedding.py (CLI)
+scripts/            download_data.py (Zenodo data), make_notebooks.py (regenerates the notebooks),
+                    compute_embedding.py (CLI)
 tests/              synthetic checks (route separation, water-permutation invariance)
 data/README.md      where the trajectories come from
 ```
@@ -99,7 +101,16 @@ data/README.md      where the trajectories come from
 | `oame_g2` | OAMe–G2 host–guest unbinding | 95 | L² + water matching | hydration (map with water), guest geometry (solute-only map) |
 | `trypsin_benzamidine` | Benzamidine–trypsin unbinding | 50 | L² + water matching | hydration sites + ligand (map with water), ligand geometry (ligand-only map) |
 
-The trajectories are not included; see `data/README.md`.
+The trajectories are on Zenodo ([10.5281/zenodo.23975078](https://doi.org/10.5281/zenodo.23975078)), one
+archive per system. The notebooks download a missing system into `data/` on first use; to fetch them beforehand:
+
+```bash
+python scripts/download_data.py                     # all five systems, ~16 GB (trypsin alone is 14 GB)
+python scripts/download_data.py alanine_dipeptide oame_g2
+```
+
+Set `PATHFDM_DATA` to keep the data outside the repository. Adenylate kinase uses the public MDAnalysis
+PSAnalysisTutorial; see `data/README.md`.
 
 ## Citation
 

@@ -17,6 +17,7 @@ DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents
 
 import pandas as pd
 
+from pathfdm.data import require
 from pathfdm import find_trajectories, load_trajectories
 
 DATA = {
@@ -42,6 +43,7 @@ N_TRAJ = 200                         # the analysed set: trajectory_0 ... trajec
 
 
 def load(n_jobs: int = 8):
+    require(DATA_ROOT)                     # downloads the system from Zenodo if it is missing
     files = find_trajectories(DATA["traj_dir"], "*.xtc")[:N_TRAJ]
     ts = load_trajectories(files, DATA["topology"], DATA["topology"],
                            n_jobs=n_jobs, **OPTIONS)

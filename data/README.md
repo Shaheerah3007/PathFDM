@@ -1,6 +1,6 @@
 # Data
 
-The trajectories are archived on Zenodo (DOI: to be added). Download the archives and unpack them in this
+The trajectories are archived on Zenodo (DOI: [10.5281/zenodo.23975078](https://doi.org/10.5281/zenodo.23975078)). Download the archives and unpack them in this
 folder, so that every system has its own subfolder:
 
 ```
@@ -13,6 +13,15 @@ data/
   imatinib_abl/           trajectories/trajectory_*.xtc, protein_imatinib.gro, trajectory_routes_literature.txt
   adenylate_kinase/       PSAnalysisTutorial/   (not in the archive, see below)
 ```
+
+From the repository root (checks the SHA256 sums and unpacks into `data/`):
+
+```bash
+python scripts/download_data.py                        # all five systems, ~16 GB
+python scripts/download_data.py alanine_dipeptide      # or only some
+```
+
+The notebooks do the same for a missing system on first use. By hand:
 
 ```bash
 cd data

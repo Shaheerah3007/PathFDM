@@ -18,6 +18,7 @@ DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents
 import numpy as np
 import pandas as pd
 
+from pathfdm.data import require
 from pathfdm import find_trajectories, load_trajectories
 
 DATA = {
@@ -40,6 +41,7 @@ LABEL_CONFIG = {0: {"color": "#008241", "name": "DG"}, 1: {"color": "#FDD700", "
 
 
 def load(n_jobs: int = 8):
+    require(DATA_ROOT)                     # downloads the system from Zenodo if it is missing
     ts = load_trajectories(find_trajectories(DATA["traj_dir"], "*.dcd"), DATA["topology"], DATA["topology"],
                            n_jobs=n_jobs, **OPTIONS)
     lab = pd.read_csv(DATA["labels"], sep="\t").set_index("trajectory_name")

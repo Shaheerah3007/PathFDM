@@ -30,6 +30,7 @@ import numpy as np
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 
+from pathfdm.data import require
 from pathfdm import find_trajectories, load_trajectories
 
 DATA = {
@@ -82,6 +83,7 @@ WATER_PICKS = {
 
 def load(water_pick: str | None = "sites", k: int = 6, n_jobs: int = 8):
     """TrajectorySet (benzamidine + waters chosen by ``water_pick``; None = ligand only), COLVARs, labels."""
+    require(DATA_ROOT)                     # downloads the system from Zenodo if it is missing
     water = None if water_pick is None else (WATER_PICKS[water_pick](k) if water_pick == "closest"
                                              else WATER_PICKS[water_pick]())
     files = find_trajectories(DATA["traj_dir"], "traj_*.dcd")

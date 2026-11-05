@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
 
+from pathfdm.data import require
 from pathfdm import load_trajectories
 
 DATA = {
@@ -54,6 +55,7 @@ def trajectory_files():
 
 def load(n_jobs: int = 8, **overrides):
     """TrajectorySet of the 100 paths and their route labels (same order)."""
+    require(DATA_ROOT)                     # downloads the system from Zenodo if it is missing
     ts = load_trajectories(trajectory_files(), DATA["topology"], DATA["topology"], n_jobs=n_jobs,
                            **{**OPTIONS, **overrides})
     return ts, labels_for(ts)

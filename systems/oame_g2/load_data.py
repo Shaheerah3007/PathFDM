@@ -24,6 +24,7 @@ DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents
 
 import numpy as np
 
+from pathfdm.data import require
 from pathfdm import find_trajectories, load_trajectories
 
 DATA = {
@@ -55,6 +56,7 @@ GUEST_NAMES = ["x", "y", "r", r"\cos\theta", "n_x", "n_y", "|n_z|", r"\tau_{COO}
 
 def load(k_waters: int | None = K_WATERS, solute_sel: str | None = None, n_jobs: int = 8):
     """TrajectorySet (solute + k_waters closest waters; k_waters=None or 0: solute only) and labels."""
+    require(DATA_ROOT)                     # downloads the system from Zenodo if it is missing
     opts = dict(OPTIONS)
     if solute_sel:
         opts["solute_sel"] = solute_sel
