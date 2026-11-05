@@ -24,7 +24,7 @@ Features
 ## Installation
 
 ```bash
-git clone https://github.com/<user>/PathFDM.git
+git clone https://github.com/Shaheerah3007/PathFDM.git
 cd PathFDM
 pip install -e ".[fast,notebooks]"      # fast = numba + dtaidistance (recommended for DTW)
 ```
