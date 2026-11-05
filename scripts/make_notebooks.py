@@ -27,7 +27,7 @@ from pathfdm import embed
 from pathfdm.features import feature_matrix
 from pathfdm.surrogate import fit_surrogate
 from pathfdm.evaluation import auc_per_coordinate, kmeans_ari, align_signs, compare_embeddings
-from pathfdm.plotting import apply_style, plot_space, plot_parity, plot_beeswarm
+from pathfdm.plotting import apply_style, plot_space, plot_parity, plot_beeswarm, plot_paths, plot_binned, top_descriptor
 import load_data as D
 apply_style()
 N_JOBS = 8'''
@@ -77,6 +77,21 @@ res = fit_surrogate(X, Z[:, 0], names)
 print(res.summary())
 res.table(8).round(3)"""),
     code("plot_parity(res, labels, D.LABEL_CONFIG); plt.tight_layout(); plt.show()\nplot_beeswarm(res, max_display=10); plt.show()"),
+    md("""## Descriptors along the paths
+
+Left: the paths in the (Φ, Ψ) plane, coloured by route (paper, Fig. b). Right: one descriptor against path
+progress; by default the descriptor behind the highest-ranked SHAP feature. Set `X_DESC`, `Y_DESC` and
+`DESC` to any of `D.DESC_NAMES` to plot other pairs."""),
+    code("""X_DESC, Y_DESC = r"\\phi", r"\\psi"                     # paper: Ramachandran plane
+DESC = D.DESC_NAMES[top_descriptor(res, D.DESC_NAMES)]       # or e.g. r"\\omega_1"
+col = {n: i for i, n in enumerate(D.DESC_NAMES)}
+fig, axs = plt.subplots(1, 2, figsize=(6.6, 2.7))
+plot_paths([d[:, col[X_DESC]] for d in desc], [d[:, col[Y_DESC]] for d in desc], labels, D.LABEL_CONFIG, ax=axs[0],
+           xlabel=f"${X_DESC}$ (deg)", ylabel=f"${Y_DESC}$ (deg)", lw=0.5, alpha=0.5)
+axs[0].set_xlim(-180, 180); axs[0].set_ylim(-180, 180)
+plot_paths([np.linspace(0, 1, len(d)) for d in desc], [d[:, col[DESC]] for d in desc], labels, D.LABEL_CONFIG,
+           ax=axs[1], xlabel="path progress", ylabel=f"${DESC}$ (deg)" if DESC != r"c7\\text{-}h" else "C7 H-bond (Å)", lw=0.5, alpha=0.5, legend=False)
+plt.tight_layout(); plt.show()"""),
     md("## Setting: statistics on the denoised path\n\nAll four statistics on the denoised path instead of the mixed scheme above."),
     code("""X2, _ = feature_matrix(desc, D.DESC_NAMES, stats_on="denoised")
 res2 = fit_surrogate(X2, Z[:, 0], names)
@@ -128,6 +143,36 @@ plot_parity(res_w, labels, D.LABEL_CONFIG, axs=axs[1], title="with water")
 plt.tight_layout(); plt.show()
 plot_beeswarm(res_w, max_display=10, title="map with water: FDM 0"); plt.show()
 plot_beeswarm(res_s, max_display=10, title="solute-only map: FDM 0"); plt.show()"""),
+    md("""## Descriptors along the paths
+
+As in the paper figure: (c) water coordination d<sub>6</sub> at V2 against the guest height cyl.z, one line
+per trajectory; (f) guest orientation cos θ and (i) the number of waters in the host cavity as functions of
+cyl.z, each trajectory averaged in 1 Å bins of cyl.z (median over trajectories and interquartile band). The
+dashed line is cyl.z = 6 Å, the upper limit of the bound state. `DESC` (bottom right) plots any hydration or
+guest descriptor the same way; by default the one behind the highest-ranked SHAP feature of the map with water.
+
+The paper plots cos θ with the opposite sign (PLUMED convention of the earlier figure): set `COS_SIGN = -1`."""),
+    code("""COS_SIGN = 1.0
+EDGES = np.arange(-1, 19, 1.0)                     # 1 A bins of cyl.z
+hyd, gst = D.hydration_descriptors(ts), D.guest_descriptors(ts)
+cz = [D.cyl_z(c) for c in ts.coords]
+cav = [D.cavity_waters(c, ts.water_info["n_solute_atoms"]) for c in ts.coords]
+DESC = D.HYDRATION_NAMES[top_descriptor(res_w, D.HYDRATION_NAMES)]        # or e.g. "d_{6}", r"\\cos\\theta"
+pool = {**{n: [h[:, i] for h in hyd] for i, n in enumerate(D.HYDRATION_NAMES)},
+        **{n: [g[:, i] for g in gst] for i, n in enumerate(D.GUEST_NAMES)}}
+fig, axs = plt.subplots(2, 2, figsize=(6.6, 4.6))
+plot_paths([h[:, 5] for h in hyd], cz, labels, D.LABEL_CONFIG, ax=axs[0, 0], xlabel="$d_{6}$ (V2)",
+           ylabel="cyl.z (Å)", lw=0.5, alpha=0.5, title="(c)")
+plot_binned(cz, [COS_SIGN * g[:, 3] for g in gst], labels, D.LABEL_CONFIG, EDGES, ax=axs[0, 1], xlabel="cyl.z (Å)",
+            ylabel=r"$\\cos\\theta$", legend=False, title="(f)")
+_, cav_table = plot_binned(cz, cav, labels, D.LABEL_CONFIG, EDGES, ax=axs[1, 0], xlabel="cyl.z (Å)",
+                           ylabel="cavity waters", legend=False, title="(i)")
+plot_binned(cz, pool[DESC], labels, D.LABEL_CONFIG, EDGES, ax=axs[1, 1], xlabel="cyl.z (Å)", ylabel=f"${DESC}$",
+            legend=False, title="top SHAP descriptor" if DESC == D.HYDRATION_NAMES[top_descriptor(res_w, D.HYDRATION_NAMES)] else None)
+for ax in (axs[0, 1], axs[1, 0], axs[1, 1]):
+    ax.axvline(D.BOUND_Z, color="#444444", lw=0.5, ls="--", alpha=0.55)
+axs[0, 0].axhline(D.BOUND_Z, color="#444444", lw=0.5, ls="--", alpha=0.55)
+plt.tight_layout(); plt.show()"""),
     md("""## Setting: number of waters K, with and without matching
 
 The waters are ranked by closest approach to the complex, so the K closest are the first K of the 64 loaded.
@@ -206,6 +251,25 @@ plot_parity(res_w, labels, D.LABEL_CONFIG, axs=axs[1], title="ligand + water")
 plt.tight_layout(); plt.show()
 plot_beeswarm(res_w, max_display=10, title="ligand + water: FDM 0"); plt.show()
 plot_beeswarm(res_l, max_display=10, title="ligand only: FDM 0"); plt.show()"""),
+    md("""## Descriptors along the paths
+
+Left: funnel coordinate z against the water occupancy of hydration site V9, one line per trajectory; the band is
+the window z = 0.45–1.0 nm used to assign the routes (paper, Fig. b). Right: any COLVAR column (`DESC`, e.g.
+`"st"`, `"vwo9"`, `"radius"`, `"FG"`) against z, each trajectory averaged in 0.05 nm bins of z (median and
+interquartile band); by default the hydration site behind the highest-ranked SHAP feature of the map with water."""),
+    code("""names_w = D.water_descriptor_names()
+cols_w = ["radius", "costheta", "ringz"] + D.HYDRATION_COLS
+top = cols_w[top_descriptor(res_w, names_w)]
+DESC = top if top in cvs[0].columns else "vwo9"           # or e.g. "st"
+z = [c["cyl.z"].to_numpy() for c in cvs]
+fig, axs = plt.subplots(1, 2, figsize=(6.6, 2.7))
+plot_paths([D.v9_occupancy(c) for c in cvs], z, labels, D.LABEL_CONFIG, ax=axs[0], xlabel="V9 occupancy",
+           ylabel="z (nm)", lw=0.8, alpha=0.75)
+axs[0].axhspan(*D.Z_WINDOW, color="k", alpha=0.06)
+plot_binned(z, [c[DESC].to_numpy() for c in cvs], labels, D.LABEL_CONFIG, np.arange(0.2, 2.0, 0.05), ax=axs[1],
+            xlabel="z (nm)", ylabel=DESC, legend=False)
+axs[1].axvspan(*D.Z_WINDOW, color="k", alpha=0.06)
+plt.tight_layout(); plt.show()"""),
     md("""## Setting: which waters
 
 * `sites` (above): waters in the hydration sites V1–V16 in the first frame

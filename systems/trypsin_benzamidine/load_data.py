@@ -169,3 +169,8 @@ def water_descriptor_names():
 
 def ligand_descriptors(ts):
     return [ligand_geometry(x) for x in ts.coords]
+
+
+def v9_occupancy(cv):
+    """Water occupancy of hydration site V9 from its normalized PLUMED value (paper figure, panel b)."""
+    return (cv["vwo9"].to_numpy() + 1) * 1.5

@@ -1,4 +1,4 @@
-"""Plots: trajectory space (FDM coordinates), surrogate parity plots, SHAP beeswarm."""
+"""Plots: trajectory space (FDM coordinates), descriptors along the paths, surrogate parity plots, SHAP beeswarm."""
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
@@ -101,3 +101,77 @@ def plot_beeswarm(res, max_display=10, title=None, figsize=(3.4, 2.6)):
         ax.set_title(title, fontsize=8)
     plt.tight_layout()
     return ax
+
+
+def _route_legend(ax, labels, label_config, fontsize=6):
+    from matplotlib.lines import Line2D
+    labels = np.asarray(labels)
+    ax.legend(handles=[Line2D([], [], color=cfg["color"], ls="-", lw=1.5, label=f"{cfg['name']} ({(labels == lab).sum()})")
+                       for lab, cfg in label_config.items() if (labels == lab).any()], fontsize=fontsize)
+
+
+def plot_paths(xs, ys, labels=None, label_config=None, ax=None, xlabel=None, ylabel=None, lw=0.6, alpha=0.6,
+               legend=True, title=None):
+    """Every trajectory as a line in the plane of two per-frame quantities, coloured by label.
+
+    xs, ys : lists (one entry per trajectory) of 1-D arrays of equal length per trajectory, e.g. Phi and Psi,
+             or a descriptor and the progress coordinate.
+    """
+    ax = ax or plt.subplots(figsize=(3.2, 2.6))[1]
+    labels = np.full(len(xs), -999) if labels is None else np.asarray(labels)
+    cfg = label_config or {}
+    for k in np.random.default_rng(0).permutation(len(xs)):     # random order: no route drawn entirely on top
+        ax.plot(xs[k], ys[k], ls="-", lw=lw, alpha=alpha, color=cfg.get(labels[k], {"color": "#999999"})["color"])
+    if legend and label_config:
+        _route_legend(ax, labels, label_config)
+    ax.set_xlabel(xlabel or "")
+    ax.set_ylabel(ylabel or "")
+    if title:
+        ax.set_title(title, fontsize=8)
+    return ax
+
+
+def plot_binned(zs, vs, labels, label_config, edges, ax=None, min_paths=5, xlabel=None, ylabel=None, legend=True,
+                title=None):
+    """A per-frame quantity as a function of a progress coordinate, per label.
+
+    Every trajectory is first averaged in each bin of ``edges`` (so it counts once per bin, however long it stays
+    there); the line is the median over the trajectories of a label and the band the interquartile range. Bins
+    reached by fewer than ``min_paths`` trajectories of a label are left out. Returns (ax, table).
+    """
+    import pandas as pd
+    ax = ax or plt.subplots(figsize=(3.2, 2.2))[1]
+    edges = np.asarray(edges, float)
+    centres = 0.5 * (edges[1:] + edges[:-1])
+    labels = np.asarray(labels)
+    rows = []
+    for lab, cfg in label_config.items():
+        idx = np.flatnonzero(labels == lab)
+        if not len(idx):
+            continue
+        A = np.full((len(idx), len(centres)), np.nan)
+        for r, k in enumerate(idx):
+            b = np.digitize(zs[k], edges) - 1
+            v = np.asarray(vs[k], float)
+            for j in np.unique(b[(b >= 0) & (b < len(centres))]):
+                A[r, j] = v[b == j].mean()
+        n = np.isfinite(A).sum(0)
+        ok = n >= min_paths
+        q1, med, q3 = np.nanpercentile(A[:, ok], [25, 50, 75], axis=0)
+        ax.fill_between(centres[ok], q1, q3, color=cfg["color"], alpha=0.2, lw=0)
+        ax.plot(centres[ok], med, color=cfg["color"], ls="-", lw=1.2, marker="o", ms=2.5, label=f"{cfg['name']} ({len(idx)})")
+        rows += [dict(label=cfg["name"], bin_centre=c, median=m, q25=a, q75=b_, n_paths=int(k))
+                 for c, m, a, b_, k in zip(centres[ok], med, q1, q3, n[ok])]
+    if legend:
+        ax.legend(fontsize=6)
+    ax.set_xlabel(xlabel or "")
+    ax.set_ylabel(ylabel or "")
+    if title:
+        ax.set_title(title, fontsize=8)
+    return ax, pd.DataFrame(rows)
+
+
+def top_descriptor(res, desc_names, rank=0):
+    """Per-frame descriptor behind the ``rank``-th feature by SHAP share (features are 4 statistics per descriptor)."""
+    j = np.argsort(res.shap_share)[::-1][rank]
+    return j // (len(res.names) // len(desc_names))

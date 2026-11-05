@@ -115,3 +115,31 @@ def hydration_descriptors(ts):
 
 def guest_descriptors(ts):
     return [guest_geometry(c) for c in ts.coords]
+
+
+# ── quantities along the paths (paper figure: d6 against cyl.z, cos theta and cavity waters binned by cyl.z) ──
+BOUND_Z = 6.0                                     # cyl.z upper limit of the bound state (Angstrom)
+
+
+def cyl_z(coords):
+    """Height of the guest centre above V1 along the host axis (Angstrom), every frame."""
+    g = np.asarray(coords, dtype=np.float64).reshape(len(coords), -1, 3)[:, :N_GUEST]
+    return g[:, [0, 1, 2, 3, 4, 5, 6, 8]].mean(axis=1)[:, 2] - V_SITES[0, 2]
+
+
+def cavity_waters(coords, n_solute_atoms, r0=4.5, buried=32.0, floor_z=20.0):
+    """Number of the selected waters inside the host cavity, every frame.
+
+    A water is in the cavity when it is buried by the solute (sum over solute atoms of the switching function
+    (1 - (d/r0)^6) / (1 - (d/r0)^12) above ``buried``) and lies above the cavity floor (z >= V1). Needs the solute
+    to be guest + host and the coordinates to include waters.
+    """
+    from scipy.spatial.distance import cdist
+    x = np.asarray(coords, dtype=np.float64).reshape(len(coords), -1, 3)
+    sol, wat = x[:, :n_solute_atoms], x[:, n_solute_atoms:]
+    out = np.zeros(len(x), dtype=int)
+    for t in range(len(x)):
+        q = cdist(wat[t], sol[t]) / r0
+        b = ((1 - q ** 6) / (1 - q ** 12 + 1e-12)).sum(axis=1)
+        out[t] = ((b > buried) & (wat[t, :, 2] >= floor_z)).sum()
+    return out
