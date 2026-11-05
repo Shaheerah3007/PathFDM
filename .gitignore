@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+# MDAnalysis offset caches
+.*_offsets.npz
+.*.lock
+# trajectory data is not part of the repository (see data/README.md)
+*.dcd
+*.xtc
+*.trr
+*.colvar
