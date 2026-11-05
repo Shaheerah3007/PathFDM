@@ -14,11 +14,16 @@ Descriptors (per frame)
 
 The PLUMED CVs (cyl.z, radius, st, sw, vwo1-16, FG, FH) are read from COLVAR files computed once with
 plumed/plumed_descriptors.dat (PLUMED 2.9 with the pytorch module); see run_plumed() to recompute them.
-Edit DATA to point at your copy of the data.
+Data: <repository>/data/<system>/ or $PATHFDM_DATA/<system>/ (see data/README.md).
 """
 from __future__ import annotations
 
 import os
+from pathlib import Path
+
+# data root: $PATHFDM_DATA if set, else <repository>/data (unpack the Zenodo archive there)
+DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents[2] / "data")) / "trypsin_benzamidine"
+
 import re
 
 import numpy as np
@@ -27,15 +32,14 @@ from sklearn.mixture import GaussianMixture
 
 from pathfdm import find_trajectories, load_trajectories
 
-ROOT = "/home/shaheerah/trypsin"
 DATA = {
-    "traj_dir": f"{ROOT}/pg_trypsin/B_to_U_v9_zA_scaled/trajectories",
-    "topology": f"{ROOT}/setup/start_B.gro",
-    "reference": f"{ROOT}/narjes_repo/FES/fit_tem.pdb",             # funnel template (223 CA atoms)
-    "plumed_script": f"{ROOT}/plumed/plumed_descriptors.dat",
-    "colvar_dir": f"{ROOT}/plumed/colvars_desc",
-    "colvar_prefix": "B_to_U_v9_zA_scaled__",
-    "plumed_bin": "/home/shaheerah/Soft/plumed-2.9.2-libtorch/bin/plumed-torch",
+    "traj_dir": str(DATA_ROOT / "trajectories"),
+    "topology": str(DATA_ROOT / "start_B.gro"),
+    "reference": str(DATA_ROOT / "fit_tem.pdb"),                  # funnel template (223 CA atoms)
+    "plumed_script": str(DATA_ROOT / "plumed_descriptors.dat"),
+    "colvar_dir": str(DATA_ROOT / "colvars"),
+    "colvar_prefix": "",
+    "plumed_bin": "plumed",                                        # PLUMED with the pytorch module (only for run_plumed)
 }
 
 OPTIONS = {

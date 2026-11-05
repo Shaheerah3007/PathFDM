@@ -12,3 +12,6 @@ dist/
 *.xtc
 *.trr
 *.colvar
+# data folders (downloaded from Zenodo; see data/README.md)
+data/*
+!data/README.md

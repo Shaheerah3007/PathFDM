@@ -5,20 +5,25 @@ Metric    : DTW (paths of very different length; 104-813 frames)
 Labels    : trajectory_routes_literature.txt, routes named after the helices that line them
             (Nunes-Alves et al. 2018, 2021): DG, FGH, HJ, EJ, CD, FI
 
-Edit DATA to point at your copy of the data.
+Data: <repository>/data/<system>/ or $PATHFDM_DATA/<system>/ (see data/README.md).
 """
 from __future__ import annotations
+
+import os
+from pathlib import Path
+
+# data root: $PATHFDM_DATA if set, else <repository>/data (unpack the Zenodo archive there)
+DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents[2] / "data")) / "t4l_benzene"
 
 import numpy as np
 import pandas as pd
 
 from pathfdm import find_trajectories, load_trajectories
 
-BASE = "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/4W52/dry"
 DATA = {
-    "traj_dir": f"{BASE}/all_reactive_trajs",
-    "topology": f"{BASE}/pbcmol.gro",
-    "labels": f"{BASE}/trajectory_routes_literature.txt",
+    "traj_dir": str(DATA_ROOT / "trajectories"),          # solvent stripped: protein + benzene
+    "topology": str(DATA_ROOT / "protein_benzene.gro"),
+    "labels": str(DATA_ROOT / "trajectory_routes_literature.txt"),
 }
 
 OPTIONS = {

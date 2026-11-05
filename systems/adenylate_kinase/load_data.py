@@ -11,11 +11,16 @@ Collective variables (visualization only, not FDM input), computed on the fitted
     zeta, rho    progress (distance remaining to 4AKE, A) along, and RMS deviation (A) from, the straight
                  C-alpha path between the two end structures
 
-Edit DATA to point at your copy of the tutorial repository.
+Data: <repository>/data/<system>/ or $PATHFDM_DATA/<system>/ (see data/README.md).
 """
 from __future__ import annotations
 
 import os
+from pathlib import Path
+
+# data root: $PATHFDM_DATA if set, else <repository>/data (unpack the Zenodo archive there)
+DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents[2] / "data")) / "adenylate_kinase"
+
 
 import MDAnalysis as mda
 import numpy as np
@@ -25,11 +30,11 @@ from MDAnalysis.analysis.align import rotation_matrix
 
 from pathfdm.loaders import _pack
 
-PSA = "/home/shaheerah/functional-diffusion-maps/PSAnalysisTutorial"
+PSA = DATA_ROOT / "PSAnalysisTutorial"     # https://github.com/Becksteinlab/PSAnalysisTutorial
 DATA = {
-    "methods_dir": f"{PSA}/methods",
-    "closed": f"{PSA}/structs/adk1AKE.pdb",
-    "open": f"{PSA}/structs/adk4AKE.pdb",
+    "methods_dir": str(PSA / "methods"),
+    "closed": str(PSA / "structs" / "adk1AKE.pdb"),
+    "open": str(PSA / "structs" / "adk4AKE.pdb"),
 }
 METHODS = ["rTMD-F", "rTMD-S", "DIMS", "FRODA"]
 RUNS = 3

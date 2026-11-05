@@ -1,21 +1,42 @@
 # Data
 
-The trajectories are not stored in this repository. Each system's `systems/<name>/load_data.py` has a `DATA`
-dictionary at the top with the paths it reads; edit those paths to point at your copy.
+The trajectories are archived on Zenodo (DOI: to be added). Download the archives and unpack them in this
+folder, so that every system has its own subfolder:
 
-| System | Trajectories | Files read |
+```
+data/
+  alanine_dipeptide/      trajectories/*.dcd, ala_dipeptide_equilibrated.pdb, trajectory_labels.txt
+  oame_g2/                trajectories/trajectory_*.dcd, box.gro, conf_template.gro, trajectory_labels.txt, plumed.dat
+  trypsin_benzamidine/    trajectories/traj_*.dcd, colvars/traj_*.colvar, start_B.gro, fit_tem.pdb,
+                          plumed_descriptors.dat
+  t4l_benzene/            trajectories/*.dcd, protein_benzene.gro, trajectory_routes_literature.txt
+  imatinib_abl/           trajectories/trajectory_*.xtc, protein_imatinib.gro, trajectory_routes_literature.txt
+  adenylate_kinase/       PSAnalysisTutorial/   (not in the archive, see below)
+```
+
+```bash
+cd data
+for f in /path/to/download/*.tar; do tar -xf "$f"; done
+```
+
+The loaders (`systems/<system>/load_data.py`) read from `data/<system>/`. To keep the data elsewhere, set
+`PATHFDM_DATA` to the folder that contains the system subfolders:
+
+```bash
+export PATHFDM_DATA=/scratch/pathfdm_data
+```
+
+## Contents
+
+| System | Trajectories | Notes |
 |---|---|---|
-| Alanine dipeptide | 100 PathGennie reactive paths (`*.dcd`) | equilibrated structure (`ala_dipeptide_equilibrated.pdb`), `trajectory_labels.txt` |
-| Adenylate kinase | 12 paths from the MDAnalysis PSAnalysisTutorial (`methods/{DIMS,FRODA,rTMD-F,rTMD-S}/00{1,2,3}/fitted_psa.dcd`) | `structs/adk1AKE.pdb`, `structs/adk4AKE.pdb`, per-method topologies |
-| T4 lysozyme L99A – benzene | 46 reactive unbinding trajectories (`*.dcd`) | `pbcmol.gro`, `trajectory_routes_literature.txt` |
-| Imatinib – Abl (2HYY) | 200 PathGennie unbinding trajectories (`trajectory_0..199.xtc`) | `pbcmol.gro`, `trajectory_routes_literature.txt` |
-| OAMe – G2 | 95 reactive unbinding trajectories (`trajectory_*.dcd`) | `box.gro` (topology), `conf_template.gro` (fit reference), `trajectory_labels.txt` |
-| Trypsin – benzamidine | 50 PathGennie escape trajectories (`traj_000..049.dcd`) | `start_B.gro`, funnel template `fit_tem.pdb`, `plumed_descriptors.dat`, one COLVAR per trajectory |
+| Alanine dipeptide | 100 PathGennie reactive paths, C7eq → C7ax | as written by PathGennie; labels: 0 = α<sub>R</sub>, 1 = α<sub>L</sub> route |
+| OAMe–G2 | 95 reactive unbinding trajectories | full system (waters needed for the water selection); labels: 1 = dry, 0 = wet |
+| Trypsin–benzamidine | 50 PathGennie escape trajectories from state B | full system (waters needed); `colvars/` holds the PLUMED CVs (funnel z, radius, Deep-TICA s<sub>t</sub>, hydration-site occupancies V1–V16, FG, FH) computed with `plumed_descriptors.dat` |
+| T4 lysozyme L99A–benzene | 46 reactive unbinding trajectories | solvent and ions removed (protein + benzene); labels: literature egress routes |
+| Imatinib–Abl (2HYY) | 200 PathGennie unbinding trajectories | solvent and ions removed (protein + imatinib); labels: Path I, II, IIIa, IIIb, two outliers |
+| Adenylate kinase | 12 paths (DIMS, FRODA, rTMD-F, rTMD-S) | public: clone https://github.com/Becksteinlab/PSAnalysisTutorial into `data/adenylate_kinase/PSAnalysisTutorial` |
 
-Label files are plain text: one trajectory name and one integer label per line (tab- or space-separated, with
-a header line where noted in `load_data.py`).
-
-The trypsin descriptors use PLUMED CVs (funnel coordinate, Deep-TICA s<sub>t</sub>, hydration-site
-occupancies). They are read from precomputed COLVAR files; `run_plumed()` in
-`systems/trypsin_benzamidine/load_data.py` recomputes them with `plumed driver` (PLUMED 2.9 with the
-pytorch module and the Deep-LDA/Deep-TICA models of the original study).
+The trypsin COLVARs can be recomputed with `run_plumed()` in `systems/trypsin_benzamidine/load_data.py`; this
+needs PLUMED with the pytorch module and the Deep-LDA/Deep-TICA models of the original funnel-metadynamics
+study, which are not redistributed here.

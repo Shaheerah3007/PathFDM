@@ -5,12 +5,17 @@ Labels    : trajectory_labels.txt (0 = alpha_R route, 1 = alpha_L route)
 Descriptors for the surrogate: Phi, Psi, omega_1, omega_2 (degrees) and the C7 hydrogen-bond distance
 (ACE O - NME H, Angstrom), from the unaligned frames.
 
-Edit DATA to point at your copy of the data.
+Data: <repository>/data/<system>/ or $PATHFDM_DATA/<system>/ (see data/README.md).
 """
 from __future__ import annotations
 
-import glob
 import os
+from pathlib import Path
+
+# data root: $PATHFDM_DATA if set, else <repository>/data (unpack the Zenodo archive there)
+DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents[2] / "data")) / "alanine_dipeptide"
+
+import glob
 
 import MDAnalysis as mda
 import numpy as np
@@ -20,9 +25,9 @@ from joblib import Parallel, delayed
 from pathfdm import load_trajectories
 
 DATA = {
-    "traj_dir": "/home/shaheerah/PathGennie_1.0/examples/alanine_dipeptide/openmm/pathgennie_openmm_run/output",
-    "topology": "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/AlaD/ala_dipeptide_equilibrated.pdb",
-    "labels": "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/AlaD/trajectory_labels.txt",
+    "traj_dir": str(DATA_ROOT / "trajectories"),
+    "topology": str(DATA_ROOT / "ala_dipeptide_equilibrated.pdb"),
+    "labels": str(DATA_ROOT / "trajectory_labels.txt"),
 }
 
 OPTIONS = {

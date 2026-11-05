@@ -12,19 +12,25 @@ Descriptors
                       cos theta (long axis vs host axis), ring normal n_x, n_y, |n_z|, and tau_COO
                       (|cos| between carboxylate-plane and ring normals)
 
-Edit DATA to point at your copy of the data.
+Data: <repository>/data/<system>/ or $PATHFDM_DATA/<system>/ (see data/README.md).
 """
 from __future__ import annotations
+
+import os
+from pathlib import Path
+
+# data root: $PATHFDM_DATA if set, else <repository>/data (unpack the Zenodo archive there)
+DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents[2] / "data")) / "oame_g2"
 
 import numpy as np
 
 from pathfdm import find_trajectories, load_trajectories
 
 DATA = {
-    "traj_dir": "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/OAMe_G2",
-    "topology": "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/OAMe_G2/box.gro",
-    "reference": "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/OAMe_G2/conf_template.gro",
-    "labels": "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths/OAMe_G2/trajectory_labels.txt",
+    "traj_dir": str(DATA_ROOT / "trajectories"),
+    "topology": str(DATA_ROOT / "box.gro"),
+    "reference": str(DATA_ROOT / "conf_template.gro"),
+    "labels": str(DATA_ROOT / "trajectory_labels.txt"),
 }
 
 OPTIONS = {

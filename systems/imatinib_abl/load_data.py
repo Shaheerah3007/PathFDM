@@ -5,19 +5,24 @@ Labels    : trajectory_routes_literature.txt: the three routes of the PathGennie
             Path II, alphaC/catalytic loop; Path III, C-lobe) with Path III split into IIIa and IIIb, plus two
             outlier trajectories
 
-Edit DATA to point at your copy of the data.
+Data: <repository>/data/<system>/ or $PATHFDM_DATA/<system>/ (see data/README.md).
 """
 from __future__ import annotations
+
+import os
+from pathlib import Path
+
+# data root: $PATHFDM_DATA if set, else <repository>/data (unpack the Zenodo archive there)
+DATA_ROOT = Path(os.environ.get("PATHFDM_DATA", Path(__file__).resolve().parents[2] / "data")) / "imatinib_abl"
 
 import pandas as pd
 
 from pathfdm import find_trajectories, load_trajectories
 
-BASE = "/home/shaheerah/functional-diffusion-maps/Unbinding_Paths"
 DATA = {
-    "traj_dir": f"{BASE}/2HYY_new/imatinib_pathgennie_jctc_paths",
-    "topology": f"{BASE}/2HYY/pbcmol.gro",
-    "labels": f"{BASE}/2HYY_new/imatinib_pathgennie_jctc_paths/trajectory_routes_literature.txt",
+    "traj_dir": str(DATA_ROOT / "trajectories"),          # solvent stripped: protein + imatinib
+    "topology": str(DATA_ROOT / "protein_imatinib.gro"),
+    "labels": str(DATA_ROOT / "trajectory_routes_literature.txt"),
 }
 
 OPTIONS = {
