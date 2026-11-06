@@ -111,7 +111,7 @@ cavity entrance hydrates as the guest leaves, on the dry route it does not (49 d
   matched between every pair of trajectories by the Hungarian assignment.
 
 Both use the L² distance, σ = median, α = 0. The solute-only map is explained with guest-geometry descriptors,
-the map with water with the water coordinations d1–d12."""),
+the map with water with the water coordinations d1–d12 and the guest orientation cos θ."""),
     code(HEADER),
     md("## Load (solute + 32 waters)"),
     code("ts, labels = D.load(k_waters=32, n_jobs=N_JOBS)\nsol = ts.solute_only()\nprint(f\"{(labels == 1).sum()} dry, {(labels == 0).sum()} wet\")"),
@@ -130,11 +130,11 @@ print("with vs without matching, FDM 0-2:", np.round(compare_embeddings(Z_nm, Z_
 pd.DataFrame({n: {"AUC FDM 0": auc_per_coordinate(Z, labels)[0], "k-means ARI (FDM 0-1)": kmeans_ari(Z, labels)}
               for n, Z in maps.items()}).T.round(3)"""),
     md("## Surrogate models\n\n" + SURROGATE_HELP),
-    code("""X_w, n_w = feature_matrix(D.hydration_descriptors(ts), D.HYDRATION_NAMES)
+    code("""X_w, n_w = feature_matrix(D.water_map_descriptors(ts), D.WATER_MAP_NAMES)
 res_w = fit_surrogate(X_w, Z_w[:, 0], n_w)
 X_g, n_g = feature_matrix(D.guest_descriptors(ts), D.GUEST_NAMES)
 res_s = fit_surrogate(X_g, Z_sol[:, 0], n_g)
-print("map with water   (48 hydration descriptors):", res_w.summary())
+print("map with water   (52: d1-d12, cos theta):  ", res_w.summary())
 print("solute-only map  (32 guest descriptors):    ", res_s.summary())
 pd.concat({"with water": res_w.table(6), "solute only": res_s.table(6)}, axis=1).round(3)"""),
     code("""fig, axs = plt.subplots(2, 2, figsize=(6, 4.8))
@@ -157,7 +157,7 @@ EDGES = np.arange(-1, 19, 1.0)                     # 1 A bins of cyl.z
 hyd, gst = D.hydration_descriptors(ts), D.guest_descriptors(ts)
 cz = [D.cyl_z(c) for c in ts.coords]
 cav = [D.cavity_waters(c, ts.water_info["n_solute_atoms"]) for c in ts.coords]
-DESC = D.HYDRATION_NAMES[top_descriptor(res_w, D.HYDRATION_NAMES)]        # or e.g. "d_{6}", r"\\cos\\theta"
+DESC = D.WATER_MAP_NAMES[top_descriptor(res_w, D.WATER_MAP_NAMES)]        # or e.g. "d_{6}", r"\\cos\\theta"
 pool = {**{n: [h[:, i] for h in hyd] for i, n in enumerate(D.HYDRATION_NAMES)},
         **{n: [g[:, i] for g in gst] for i, n in enumerate(D.GUEST_NAMES)}}
 fig, axs = plt.subplots(2, 2, figsize=(6.6, 4.6))
@@ -168,7 +168,7 @@ plot_binned(cz, [COS_SIGN * g[:, 3] for g in gst], labels, D.LABEL_CONFIG, EDGES
 _, cav_table = plot_binned(cz, cav, labels, D.LABEL_CONFIG, EDGES, ax=axs[1, 0], xlabel="cyl.z (Å)",
                            ylabel="cavity waters", legend=False, title="(i)")
 plot_binned(cz, pool[DESC], labels, D.LABEL_CONFIG, EDGES, ax=axs[1, 1], xlabel="cyl.z (Å)", ylabel=f"${DESC}$",
-            legend=False, title="top SHAP descriptor" if DESC == D.HYDRATION_NAMES[top_descriptor(res_w, D.HYDRATION_NAMES)] else None)
+            legend=False, title="top SHAP descriptor" if DESC == D.WATER_MAP_NAMES[top_descriptor(res_w, D.WATER_MAP_NAMES)] else None)
 for ax in (axs[0, 1], axs[1, 0], axs[1, 1]):
     ax.axvline(D.BOUND_Z, color="#444444", lw=0.5, ls="--", alpha=0.55)
 axs[0, 0].axhline(D.BOUND_Z, color="#444444", lw=0.5, ls="--", alpha=0.55)

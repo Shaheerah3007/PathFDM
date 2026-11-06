@@ -5,9 +5,9 @@ FDM input : guest + host coordinates (fit on host atoms 15-54), optionally follo
             trajectories by the Hungarian assignment
 Labels    : trajectory_labels.txt (1 = dry, 0 = wet)
 Descriptors
-    map with water  : water coordinations d1-d12 (PLUMED-style switching functions, normalized):
-                      d1-d4 around four guest atoms (L1-L4), d5-d12 around eight virtual sites V1-V8 on the
-                      host axis
+    map with water  : the 13-dimensional CV space without cyl.z: water coordinations d1-d12 (PLUMED-style
+                      switching functions, normalized; d1-d4 around four guest atoms L1-L4, d5-d12 around
+                      eight virtual sites V1-V8 on the host axis) and the guest orientation cos theta
     solute-only map : guest geometry x, y, r (lateral position of the guest centre relative to the host axis),
                       cos theta (long axis vs host axis), ring normal n_x, n_y, |n_z|, and tau_COO
                       (|cos| between carboxylate-plane and ring normals)
@@ -51,6 +51,7 @@ LABEL_CONFIG = {1: {"color": "#EF553B", "name": "Dry path"}, 0: {"color": "#636E
 V_SITES = np.array([[20.136, 20.136, 20.0 + 2.5 * i] for i in range(8)])   # virtual sites V1-V8 (Angstrom)
 N_GUEST = 15
 HYDRATION_NAMES = [f"d_{{{i}}}" for i in range(1, 13)]
+WATER_MAP_NAMES = HYDRATION_NAMES + [r"\cos\theta"]   # descriptors of the map with water
 GUEST_NAMES = ["x", "y", "r", r"\cos\theta", "n_x", "n_y", "|n_z|", r"\tau_{COO}"]
 
 
@@ -113,6 +114,12 @@ def guest_geometry(coords):
 
 def hydration_descriptors(ts):
     return [hydration(c, ts.water_info["n_solute_atoms"]) for c in ts.coords]
+
+
+def water_map_descriptors(ts):
+    """d1-d12 and cos theta of every frame (names: WATER_MAP_NAMES)."""
+    n = ts.water_info["n_solute_atoms"]
+    return [np.c_[hydration(c, n), guest_geometry(c)[:, 3]] for c in ts.coords]
 
 
 def guest_descriptors(ts):
