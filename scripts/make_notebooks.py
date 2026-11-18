@@ -52,7 +52,7 @@ NOTEBOOKS = {}
 
 NOTEBOOKS["alanine_dipeptide"] = [
     md("""
-# Alanine dipeptide: C7eq → C7ax transition paths
+# Alanine dipeptide: C5 → C7ax transition paths
 
 100 PathGennie reactive paths, 38 through the α<sub>R</sub> region and 62 through the α<sub>L</sub> region.
 FDM is computed from the aligned Cartesian coordinates of all peptide atoms (L² distance, σ = median, α = 0);

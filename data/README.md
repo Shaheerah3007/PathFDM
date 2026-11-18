@@ -39,7 +39,7 @@ export PATHFDM_DATA=/scratch/pathfdm_data
 
 | System | Trajectories | Notes |
 |---|---|---|
-| Alanine dipeptide | 100 PathGennie reactive paths, C7eq → C7ax | as written by PathGennie; labels: 0 = α<sub>R</sub>, 1 = α<sub>L</sub> route |
+| Alanine dipeptide | 100 PathGennie reactive paths, C5 → C7ax | as written by PathGennie; labels: 0 = α<sub>R</sub>, 1 = α<sub>L</sub> route |
 | OAMe–G2 | 95 reactive unbinding trajectories | full system (waters needed for the water selection); labels: 1 = dry, 0 = wet |
 | Trypsin–benzamidine | 50 PathGennie escape trajectories from state B | full system (waters needed); `colvars/` holds the PLUMED CVs (funnel z, radius, Deep-TICA s<sub>t</sub>, hydration-site occupancies V1–V16, FG, FH) computed with `plumed_descriptors.dat` |
 | T4 lysozyme L99A–benzene | 46 reactive unbinding trajectories | solvent and ions removed (protein + benzene); labels: literature egress routes |

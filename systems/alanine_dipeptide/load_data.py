@@ -1,4 +1,4 @@
-"""Alanine dipeptide: C7eq -> C7ax transition paths (PathGennie, 100 reactive paths, alpha_R vs alpha_L routes).
+"""Alanine dipeptide: C5 -> C7ax transition paths (PathGennie, 100 reactive paths, alpha_R vs alpha_L routes).
 
 FDM input : aligned Cartesian coordinates of all peptide atoms (backbone fit to the equilibrated structure)
 Labels    : trajectory_labels.txt (0 = alpha_R route, 1 = alpha_L route)

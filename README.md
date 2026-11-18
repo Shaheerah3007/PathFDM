@@ -94,7 +94,7 @@ data/README.md      where the trajectories come from
 
 | Folder | System | Trajectories | Distance | Surrogate / SHAP |
 |---|---|---|---|---|
-| `alanine_dipeptide` | Alanine dipeptide C7eq → C7ax | 100 | L² | Φ, Ψ, ω, C7 H-bond |
+| `alanine_dipeptide` | Alanine dipeptide C5 → C7ax | 100 | L² | Φ, Ψ, ω, C7 H-bond |
 | `adenylate_kinase` | Adenylate kinase, 4 protocols | 12 | L² | – (CV projections, PCA) |
 | `t4l_benzene` | Benzene–T4 lysozyme L99A unbinding | 46 | DTW (α = 0.5) | – |
 | `imatinib_abl` | Imatinib–Abl unbinding | 200 | L² | – |
